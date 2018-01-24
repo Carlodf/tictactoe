@@ -10,16 +10,6 @@
 const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 600;
 
-void draw_board(raii::Renderer_ptr& renderer)
-{
-    Draw::draw_vertical_line(renderer.get(), 200, 0, 600, 6);
-    Draw::draw_vertical_line(renderer.get(), 400, 0, 600, 6);
-
-    Draw::draw_orizontal_line(renderer.get(), 0, 200, 600, 6);
-    Draw::draw_orizontal_line(renderer.get(), 0, 400, 600, 6);
-}
-
-
 int main()
 {
     raii::Sdl sdl;
@@ -76,8 +66,11 @@ int main()
         grey_50.b,
         SDL_ALPHA_OPAQUE);
 
-    //draw_board(renderer);
-    Draw::draw_line(renderer.get(), 300, 300, 90, 600, 10);
+    for (int angle = 0; angle <= 180; angle += 1)
+    {
+        //draw_board(renderer);
+        Draw::draw_line(renderer, 300, 300, angle, 600, 1);
+    }
 
 
     SDL_RenderPresent(renderer.get());

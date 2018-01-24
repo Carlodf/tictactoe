@@ -9,7 +9,7 @@
 struct Draw
 {
     static void draw_line(
-        SDL_Renderer* ren,
+        raii::Renderer_ptr const& ren,
         int center_x,
         int center_y,
         int angle,
@@ -25,7 +25,7 @@ struct Draw
         auto x_begin = center_x - x_offset;
         auto y_begin = center_y + y_offset;
         SDL_RenderDrawLine(
-            ren, x_begin, y_begin, x_end, y_end);
+            ren.get(), x_begin, y_begin, x_end, y_end);
         if (thick > 1)
         {
             int left_w = thick/2;
@@ -36,9 +36,10 @@ struct Draw
             }
             for (int incr = 0; incr <= left_w; ++incr)
             {
-                // bisogna trovare l'angolo perpendicolare
-                int y_off = incr * cos(rad);
-                int x_off = incr * sin(rad);
+                // center translation happens ortogonally, thus sin and cos
+                // need to be inverted.
+                int x_off = incr * cos(rad);
+                int y_off = incr * sin(rad);
                 int new_center_x = center_x - x_off;
                 int new_center_y = center_y - y_off;
                 auto new_x_end = new_center_x + x_offset;
@@ -46,7 +47,7 @@ struct Draw
                 auto new_x_begin = new_center_x - x_offset;
                 auto new_y_begin = y_offset + new_center_y;
                 SDL_RenderDrawLine(
-                    ren, new_x_begin, new_y_begin, new_x_end, new_y_end);
+                    ren.get(), new_x_begin, new_y_begin, new_x_end, new_y_end);
             }
             for (int incr = 0; incr <= right_w; ++incr)
             {
@@ -59,7 +60,7 @@ struct Draw
                 auto new_x_begin = new_center_x - x_offset;
                 auto new_y_begin = y_offset + new_center_y;
                 SDL_RenderDrawLine(
-                    ren, new_x_begin, new_y_begin, new_x_end, new_y_end);
+                    ren.get(), new_x_begin, new_y_begin, new_x_end, new_y_end);
             }
         }
     }
