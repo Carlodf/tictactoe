@@ -7,8 +7,28 @@
 
 
 
-const int SCREEN_WIDTH = 600;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 800;
+const int THICKNESS = SCREEN_WIDTH/100;
+
+void render_board(raii::Renderer_ptr const &ren)
+{
+    SDL_SetRenderDrawColor(
+        ren.get(),
+        black.r,
+        black.g,
+        black.b,
+        SDL_ALPHA_OPAQUE);
+
+        Draw::draw_line(
+            ren, SCREEN_WIDTH/3, SCREEN_HEIGHT/2, 90, SCREEN_HEIGHT, THICKNESS);
+        Draw::draw_line(
+            ren, 2 * SCREEN_WIDTH/3, SCREEN_HEIGHT/2, 90, SCREEN_HEIGHT, THICKNESS);
+        Draw::draw_line(
+            ren, SCREEN_WIDTH/2, SCREEN_HEIGHT/3, 0, SCREEN_WIDTH, THICKNESS);
+        Draw::draw_line(
+            ren, SCREEN_WIDTH/2, 2 * SCREEN_HEIGHT/3, 0, SCREEN_WIDTH, THICKNESS);
+}
 
 int main()
 {
@@ -59,24 +79,33 @@ int main()
     //clear renderer
     SDL_RenderClear(renderer.get());
 
+    render_board(renderer);
+
     SDL_SetRenderDrawColor(
         renderer.get(),
-        grey_50.r,
-        grey_50.g,
-        grey_50.b,
+        dark_red.r,
+        dark_red.g,
+        dark_red.b,
         SDL_ALPHA_OPAQUE);
 
-    for (int angle = 0; angle <= 180; angle += 1)
-    {
-        //draw_board(renderer);
-        Draw::draw_line(renderer, 300, 300, angle, 600, 1);
-    }
+    Draw::draw_line(
+        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 45, SCREEN_WIDTH/3, 12);
+    Draw::draw_line(
+        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, -45, SCREEN_WIDTH/3, 12);
+    Draw::draw_line(
+        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/6, 45, SCREEN_WIDTH/3, 12);
+    Draw::draw_line(
+        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/6, -45, SCREEN_WIDTH/3, 12);
+    Draw::draw_line(
+        renderer, SCREEN_WIDTH/2, 5 * SCREEN_HEIGHT/6, 45, SCREEN_WIDTH/3, 12);
+    Draw::draw_line(
+        renderer, SCREEN_WIDTH/2, 5 * SCREEN_HEIGHT/6, -45, SCREEN_WIDTH/3, 12);
 
 
     SDL_RenderPresent(renderer.get());
 
     //Wait two seconds
-    SDL_Delay(4000);
+    SDL_Delay(8000);
 
     return 0;
 }

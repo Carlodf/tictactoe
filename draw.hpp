@@ -38,8 +38,8 @@ struct Draw
             {
                 // center translation happens ortogonally, thus sin and cos
                 // need to be inverted.
-                int x_off = incr * cos(rad);
-                int y_off = incr * sin(rad);
+                int x_off = incr * cos(M_PI/2 - rad);
+                int y_off = incr * sin(M_PI/2 - rad);
                 int new_center_x = center_x - x_off;
                 int new_center_y = center_y - y_off;
                 auto new_x_end = new_center_x + x_offset;
