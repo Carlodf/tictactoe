@@ -7,28 +7,8 @@
 
 
 
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 800;
-const int THICKNESS = SCREEN_WIDTH/100;
-
-void render_board(raii::Renderer_ptr const &ren)
-{
-    SDL_SetRenderDrawColor(
-        ren.get(),
-        black.r,
-        black.g,
-        black.b,
-        SDL_ALPHA_OPAQUE);
-
-        Draw::draw_line(
-            ren, SCREEN_WIDTH/3, SCREEN_HEIGHT/2, 90, SCREEN_HEIGHT, THICKNESS);
-        Draw::draw_line(
-            ren, 2 * SCREEN_WIDTH/3, SCREEN_HEIGHT/2, 90, SCREEN_HEIGHT, THICKNESS);
-        Draw::draw_line(
-            ren, SCREEN_WIDTH/2, SCREEN_HEIGHT/3, 0, SCREEN_WIDTH, THICKNESS);
-        Draw::draw_line(
-            ren, SCREEN_WIDTH/2, 2 * SCREEN_HEIGHT/3, 0, SCREEN_WIDTH, THICKNESS);
-}
+const int SCREEN_WIDTH = 600;
+const int SCREEN_HEIGHT = 600;
 
 int main()
 {
@@ -38,6 +18,9 @@ int main()
 
     //The surface contained by the window
     raii::Surface_ptr screenSurface(nullptr);
+
+    //The surface containing the background (game board)
+    raii::Surface_ptr boardSurface(nullptr);
 
     //The renderer to draw to.
     raii::Renderer_ptr renderer(nullptr);
@@ -62,47 +45,15 @@ int main()
         return 1;
     }
 
-    renderer = raii::Renderer_ptr(SDL_CreateRenderer(
-        window.get(),
-        -1,
-        SDL_RENDERER_ACCELERATED));
+    //Grab the surface inside the window
+    screenSurface = raii::Surface_ptr(SDL_GetWindowSurface(window.get()));
 
-    if(!renderer)
-    {
-        printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-        return 1;
-    }
+    boardSurface = raii::Surface_ptr(SDL_LoadBMP("assets/board.bmp"));
 
+    SDL_BlitSurface(boardSurface.get(), NULL, screenSurface.get(), NULL);
 
-    SDL_SetRenderDrawColor( renderer.get(), 0xFF, 0xFF, 0xFF, 0xFF );
+    SDL_UpdateWindowSurface(window.get());
 
-    //clear renderer
-    SDL_RenderClear(renderer.get());
-
-    render_board(renderer);
-
-    SDL_SetRenderDrawColor(
-        renderer.get(),
-        dark_red.r,
-        dark_red.g,
-        dark_red.b,
-        SDL_ALPHA_OPAQUE);
-
-    Draw::draw_line(
-        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 45, SCREEN_WIDTH/3, 12);
-    Draw::draw_line(
-        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, -45, SCREEN_WIDTH/3, 12);
-    Draw::draw_line(
-        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/6, 45, SCREEN_WIDTH/3, 12);
-    Draw::draw_line(
-        renderer, SCREEN_WIDTH/2, SCREEN_HEIGHT/6, -45, SCREEN_WIDTH/3, 12);
-    Draw::draw_line(
-        renderer, SCREEN_WIDTH/2, 5 * SCREEN_HEIGHT/6, 45, SCREEN_WIDTH/3, 12);
-    Draw::draw_line(
-        renderer, SCREEN_WIDTH/2, 5 * SCREEN_HEIGHT/6, -45, SCREEN_WIDTH/3, 12);
-
-
-    SDL_RenderPresent(renderer.get());
 
     //Wait two seconds
     SDL_Delay(8000);
