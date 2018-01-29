@@ -111,7 +111,7 @@ public:
         return status_;
     }
 
-    const SDL_Rect rect() const
+    const SDL_Rect& rect() const
     {
         return src_rect_;
     }

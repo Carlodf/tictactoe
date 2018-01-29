@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cstdlib>
-#include <iostream>
 
 #include "Error.hpp"
 #include "color_palette.hpp"
@@ -130,7 +129,9 @@ bool Tictactoe::load_board()
     board_.set_texture(raii::Texture_ptr(
         SDL_CreateTextureFromSurface(
             renderer_.get(),
-            boardSurface.get())));
+            boardSurface.get())),
+        boardSurface->w,
+        boardSurface->h);
 
     if(!board_.texture())
     {
@@ -191,9 +192,7 @@ bool Tictactoe::piece_dest(const Piece& p, SDL_Rect& dest)
             std::to_string(n_coordinate.x) + " y=" + std::to_string(n_coordinate.y) + ".\n");
         return false;
     }
-    std::cout << "Coordinate x: " << std::to_string(n_coordinate.x) << " " +
-        std::to_string(n_coordinate.y) << std::endl;
-    std::size_t scale_factor = SCREEN_WIDTH / 600;
+    std::size_t scale_factor = SCREEN_WIDTH / board_.rect().w;
     dest.w = p.rect().w * scale_factor;
     dest.h = p.rect().h * scale_factor;
     dest.x = ((SCREEN_WIDTH/n_coordinate.x) - dest.w)/2;
