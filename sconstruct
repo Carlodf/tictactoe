@@ -5,12 +5,19 @@ cxxFlags = ['-std=c++11']
 
 libraries = ['SDL2']
 
+test_lib = ['gtest', 'gtest_main']
+
 env = Environment(
     CXXFLAGS=cxxFlags,
     CC=compiler,
     CPPFLAGS=cppFlags,
-    LIBS=libraries)
+    LIBS=[libraries])
 
-env.Program(target='test', source=['test.cpp'])
+test = env.Clone()
 
-#SConscript('sketch/sconscript', exports='env')
+test.Append(LIBS=test_lib)
+
+unit_test = test.Program(target='test', source=['test_piece.cpp'], LIBPATH='/usr/include/gtest')
+test_alias = Alias('test', [unit_test], unit_test[0].abspath)
+AlwaysBuild(test_alias)
+env.Program(target='game', source=['tictactoe_main.cpp', 'tictactoe.cpp'])
