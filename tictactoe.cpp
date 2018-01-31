@@ -26,11 +26,21 @@ bool surface_from_bmp(
 }
 }
 
+bool Tictactoe::status_is_quit() const
+{
+    return status_.test(1);
+}
+
 bool Tictactoe::update()
 {
     x_pieces_.at(0).set_position(A|P1);
     o_pieces_.at(0).set_position(C|P3);
+    text_renderer_.set_texture("Prova rendering text", renderer_);
     return true;
+}
+
+void Tictactoe::poll_input_events() const
+{
 }
 
 void Tictactoe::render()
@@ -62,6 +72,21 @@ void Tictactoe::render()
         o_pieces_.back().texture().get(),
         NULL,
         &odest);
+    SDL_Rect text_dest;
+    text_dest.x = 0;
+    text_dest.y = 0;
+    text_dest.w = text_renderer_.get_src_rect().w/2;
+    text_dest.h = text_renderer_.get_src_rect().h/2;
+    SDL_Rect text_bgdest;
+    text_bgdest.x = 0;
+    text_bgdest.y = 0;
+    text_bgdest.w = text_renderer_.get_src_rect().w;
+    text_bgdest.h = text_renderer_.get_src_rect().h;
+    SDL_SetRenderDrawBlendMode(renderer_.get(), SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor( renderer_.get(), black.r, black.g, black.b, 125);
+    SDL_RenderFillRect(renderer_.get(), &text_bgdest);
+
+    text_renderer_.render(renderer_, text_dest);
 
     SDL_RenderPresent(renderer_.get());
 
@@ -74,6 +99,12 @@ bool Tictactoe::init()
     if(sdl_.init(SDL_INIT_VIDEO) < 0)
     {
         Error("SDL initialization. ", SDL_GetError());
+        return false;
+    }
+
+    if(ttf_.init() < 0)
+    {
+        Error("TTF initialization. ", TTF_GetError());
         return false;
     }
 

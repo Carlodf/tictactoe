@@ -3,7 +3,7 @@ compiler = 'gcc'
 cppFlags = ['-Wall']
 cxxFlags = ['-std=c++11']
 
-libraries = ['SDL2']
+libraries = ['SDL2', 'SDL2_ttf']
 
 test_lib = ['gtest', 'gtest_main']
 
@@ -20,4 +20,4 @@ test.Append(LIBS=test_lib)
 unit_test = test.Program(target='test', source=['test_piece.cpp'], LIBPATH='/usr/include/gtest')
 test_alias = Alias('test', [unit_test], unit_test[0].abspath)
 AlwaysBuild(test_alias)
-env.Program(target='game', source=['tictactoe_main.cpp', 'tictactoe.cpp'])
+env.Program(target='game', source=['tictactoe_main.cpp', 'tictactoe.cpp', 'text_renderer.cpp'])

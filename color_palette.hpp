@@ -23,6 +23,9 @@ const RGB_palette medium_violet_red(    {219, 112, 147});
 // Black
 const RGB_palette black({0,0,0});
 
+// White
+const RGB_palette white({255,255,255});
+
 // Red colors
 const RGB_palette dark_red({139,0,0});
 
