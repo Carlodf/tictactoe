@@ -5,9 +5,17 @@
 
 struct RGB_palette
 {
-    const Uint8 r;
-    const Uint8 g;
-    const Uint8 b;
+    RGB_palette(
+        Uint8 r,
+        Uint8 g,
+        Uint8 b,
+        Uint8 a = 255): r(r), g(g), b(b), a(a)
+    {}
+
+    Uint8 r;
+    Uint8 g;
+    Uint8 b;
+    Uint8 a;
 };
 
 typedef std::vector<RGB_palette> Color_group;

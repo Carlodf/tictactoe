@@ -35,7 +35,13 @@ bool Tictactoe::update()
 {
     x_pieces_.at(0).set_position(A|P1);
     o_pieces_.at(0).set_position(C|P3);
-    text_renderer_.set_texture("Prova rendering text", renderer_);
+    text_renderer_.set_texture("TEST", renderer_, 64);
+    SDL_Rect bkg;
+    bkg.x = 0;
+    bkg.y = 0;
+    bkg.w = SCREEN_WIDTH/3;
+    bkg.h = 3 * SCREEN_HEIGHT/6;
+    text_renderer_.set_background(bkg, {black.r, black.g, black.b, 130});
     return true;
 }
 
@@ -75,18 +81,8 @@ void Tictactoe::render()
     SDL_Rect text_dest;
     text_dest.x = 0;
     text_dest.y = 0;
-    text_dest.w = text_renderer_.get_src_rect().w/2;
-    text_dest.h = text_renderer_.get_src_rect().h/2;
-    SDL_Rect text_bgdest;
-    text_bgdest.x = 0;
-    text_bgdest.y = 0;
-    text_bgdest.w = text_renderer_.get_src_rect().w;
-    text_bgdest.h = text_renderer_.get_src_rect().h;
-    SDL_SetRenderDrawBlendMode(renderer_.get(), SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor( renderer_.get(), black.r, black.g, black.b, 125);
-    SDL_RenderFillRect(renderer_.get(), &text_bgdest);
 
-    text_renderer_.render(renderer_, text_dest);
+    text_renderer_.render(renderer_, text_dest, true);
 
     SDL_RenderPresent(renderer_.get());
 

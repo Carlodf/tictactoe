@@ -1,6 +1,7 @@
 #!python
 compiler = 'gcc'
-cppFlags = ['-Wall']
+# Wall = turns all all warnings. g = generates dbug symbols
+cppFlags = ['-Wall', '-g']
 cxxFlags = ['-std=c++11']
 
 libraries = ['SDL2', 'SDL2_ttf']
