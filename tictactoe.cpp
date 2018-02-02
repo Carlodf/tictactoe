@@ -95,7 +95,7 @@ void Tictactoe::render()
 
     SDL_RenderPresent(renderer_.get());
 
-    SDL_Delay(20000);
+    SDL_Delay(2000);
 
 }
 
