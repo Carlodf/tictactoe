@@ -1,8 +1,8 @@
 #pragma once
 
 #include <SDL2/SDL_ttf.h>
-#include <queue>
 #include <string>
+#include <unordered_map>
 
 #include "color_palette.hpp"
 #include "raii_sdl.hpp"
@@ -46,20 +46,31 @@ public:
 
     bool set_font(int size);
 
-    bool set_texture(
-        const std::string& text,
-        const raii::Renderer_ptr& ren,
-        const RGB_palette& color);
+    bool add_message(
+        const std::string& message_key,
+        const std::string& message_text,
+        const RGB_palette& color,
+        const raii::Renderer_ptr& ren);
+
+    bool update_message(
+        const std::string& message_key,
+        const std::string& message_text,
+        const RGB_palette& color,
+        const raii::Renderer_ptr& ren);
 
     bool set_background(const SDL_Rect& bkg, const RGB_palette& color);
-    bool render(const raii::Renderer_ptr& ren, SDL_Rect& dest, bool render_bkg);
+    bool render_messages(
+        const std::vector<std::string>& message_keys,
+        const raii::Renderer_ptr& ren,
+        SDL_Rect& dest,
+        bool render_bkg);
     SDL_Rect get_src_rect() const;
 
 
 private:
     std::string font_path_;
     raii::Font_ptr font_ptr_;
-    std::vector<Text_texture> textures_;
+    std::unordered_map<std::string, Text_texture> textures_;
     SDL_Rect bkg_;
     RGB_palette bkg_color_;
 };

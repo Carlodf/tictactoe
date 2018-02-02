@@ -41,7 +41,12 @@ bool Tictactoe::update()
     bkg.w = SCREEN_WIDTH/3;
     bkg.h = 3 * SCREEN_HEIGHT/6;
     text_renderer_.set_background(bkg, {black.r, black.g, black.b, 180});
-    text_renderer_.set_texture("Print to screen test.", renderer_, white);
+    text_renderer_.add_message(
+        "test",
+        "Print to screen test.",
+        white,
+        renderer_);
+
     return true;
 }
 
@@ -82,7 +87,11 @@ void Tictactoe::render()
     text_dest.x = 0;
     text_dest.y = 0;
 
-    text_renderer_.render(renderer_, text_dest, true);
+    text_renderer_.render_messages(
+        {"test"},
+        renderer_,
+        text_dest,
+        true);
 
     SDL_RenderPresent(renderer_.get());
 
