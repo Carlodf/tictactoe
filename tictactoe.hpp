@@ -28,7 +28,7 @@ public:
         sdl_(),
         ttf_(),
         window_(),
-        text_renderer_(font_path, white)
+        text_renderer_(font_path)
     {
         x_pieces_.reserve(5u);
         o_pieces_.reserve(5u);

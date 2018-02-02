@@ -7,6 +7,14 @@
 #include "color_palette.hpp"
 #include "raii_sdl.hpp"
 
+// Class to render text on an an SDL_Texture.
+// Allows to set multiple text messages displaied in sequence.
+// Takes care of wrapping lines longer than the specified rendering area.
+// Allows to specify a background for the text to be displaied on.
+// If using a background, the background needs to be set before the text.
+// This class is does not optimised with respect to performance, currently
+// uses a pretty naive way of rendering text.
+
 struct Text_texture
 {
     Text_texture(
@@ -27,10 +35,8 @@ class Text_renderer
 {
 public:
     Text_renderer(
-        const std::string& path,
-        const RGB_palette& color) :
+        const std::string& path) :
         font_path_(path),
-        color_(color),
         font_ptr_(nullptr),
         textures_(),
         bkg_(),
@@ -38,11 +44,13 @@ public:
     {}
     ~Text_renderer() = default;
 
+    bool set_font(int size);
 
     bool set_texture(
         const std::string& text,
         const raii::Renderer_ptr& ren,
-        int font_size);
+        const RGB_palette& color);
+
     bool set_background(const SDL_Rect& bkg, const RGB_palette& color);
     bool render(const raii::Renderer_ptr& ren, SDL_Rect& dest, bool render_bkg);
     SDL_Rect get_src_rect() const;
@@ -50,9 +58,8 @@ public:
 
 private:
     std::string font_path_;
-    RGB_palette color_;
     raii::Font_ptr font_ptr_;
-    std::queue<Text_texture> textures_;
+    std::vector<Text_texture> textures_;
     SDL_Rect bkg_;
     RGB_palette bkg_color_;
 };

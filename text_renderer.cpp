@@ -1,40 +1,50 @@
 #include "text_renderer.hpp"
+#include "error.hpp"
+
+bool Text_renderer::set_font(int size)
+{
+    font_ptr_ = raii::Font_ptr(
+        TTF_OpenFont(font_path_.c_str(), size));
+    if(font_ptr_)
+    {
+        return true;
+    }
+    error("Failed to open font.", TTF_GetError());
+    return false;
+}
 
 bool Text_renderer::set_texture(
     const std::string& text,
     const raii::Renderer_ptr& ren,
-    int font_size)
+    const RGB_palette& color)
 {
-    font_ptr_ = raii::Font_ptr(
-        TTF_OpenFont(font_path_.c_str(), font_size));
 
-    SDL_Color text_color = {color_.r, color_.g, color_.b, 0};
+    SDL_Color text_color = {color.r, color.g, color.b, color.a};
 
     raii::Surface_ptr tmp_surface(
         TTF_RenderText_Blended_Wrapped(
             font_ptr_.get(),
             text.c_str(),
             text_color,
-            0));
+            bkg_.w*2));
 
     if (!tmp_surface)
     {
-        //TODO log error
+        error("Filed to create surface from font:", SDL_GetError());
         return false;
     }
 
-    textures_.emplace(
+    textures_.emplace_back(
         SDL_CreateTextureFromSurface( ren.get(), tmp_surface.get()),
         tmp_surface->h,
         tmp_surface->w);
 
-    if (textures_.back().tex)
+    if (!textures_.back().tex)
     {
-        return true;
+        error("Filed to create texture from font:", SDL_GetError());
+        return false;
     }
-
-    //TODO log error
-    return false;
+    return true;
 }
 
 bool Text_renderer::set_background(
@@ -66,20 +76,24 @@ bool Text_renderer::render(
     }
     //TODO re-implement as a circular buffer based on the bkg height and
     //texture's height.
-    while (!textures_.empty())
+    int offset = 0;
+    for (const auto& item : textures_)
     {
-        dest.w = textures_.front().w/2;
-        dest.h = textures_.front().h/2;
+        SDL_Rect tmp_rect;
+        tmp_rect.w = item.w/2;
+        tmp_rect.h = item.h/2;
+        tmp_rect.x = dest.x;
+        tmp_rect.y = dest.y + offset;
 
-        if(!SDL_RenderCopy(ren.get(),
-                textures_.front().tex.get(),
+        if(SDL_RenderCopy(ren.get(),
+                item.tex.get(),
                 NULL,
-                &dest))
+                &tmp_rect) < 0)
         {
-            //TODO log error
+            error("Failed to render text texture", SDL_GetError());
             return false;
         }
-        textures_.pop();
+        offset += tmp_rect.h;
     }
     return true;
 

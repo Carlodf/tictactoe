@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-#include "Error.hpp"
+#include "error.hpp"
 #include "color_palette.hpp"
 #include "tictactoe.hpp"
 
@@ -18,7 +18,7 @@ bool surface_from_bmp(
     surf = raii::Surface_ptr(SDL_LoadBMP(filepath));
     if(!surf)
     {
-        Error("SDL failed to create surface from: "
+        error("SDL failed to create surface from: "
             + std::string(filepath) + ". ", SDL_GetError());
         return false;
     }
@@ -35,13 +35,13 @@ bool Tictactoe::update()
 {
     x_pieces_.at(0).set_position(A|P1);
     o_pieces_.at(0).set_position(C|P3);
-    text_renderer_.set_texture("TEST", renderer_, 64);
     SDL_Rect bkg;
     bkg.x = 0;
     bkg.y = 0;
     bkg.w = SCREEN_WIDTH/3;
     bkg.h = 3 * SCREEN_HEIGHT/6;
-    text_renderer_.set_background(bkg, {black.r, black.g, black.b, 130});
+    text_renderer_.set_background(bkg, {black.r, black.g, black.b, 180});
+    text_renderer_.set_texture("Print to screen test.", renderer_, white);
     return true;
 }
 
@@ -57,7 +57,7 @@ void Tictactoe::render()
     if (!piece_dest(x_pieces_.at(0), xdest) ||
      !piece_dest(o_pieces_.at(0), odest))
     {
-        Error("Failed to render pieces.");
+        error("Failed to render pieces.");
         exit(1);
     }
 
@@ -86,7 +86,7 @@ void Tictactoe::render()
 
     SDL_RenderPresent(renderer_.get());
 
-    SDL_Delay(2000);
+    SDL_Delay(20000);
 
 }
 
@@ -94,13 +94,18 @@ bool Tictactoe::init()
 {
     if(sdl_.init(SDL_INIT_VIDEO) < 0)
     {
-        Error("SDL initialization. ", SDL_GetError());
+        error("SDL initialization. ", SDL_GetError());
         return false;
     }
 
     if(ttf_.init() < 0)
     {
-        Error("TTF initialization. ", TTF_GetError());
+        error("TTF initialization. ", TTF_GetError());
+        return false;
+    }
+
+    if(!text_renderer_.set_font(64))
+    {
         return false;
     }
 
@@ -114,7 +119,7 @@ bool Tictactoe::init()
 
     if(!window_)
     {
-        Error("SDL failed to create window. ", SDL_GetError());
+        error("SDL failed to create window. ", SDL_GetError());
         return false;
     }
 
@@ -129,7 +134,7 @@ bool Tictactoe::init()
 
     if(!renderer_)
     {
-        Error("SDL failed to create renderer. ", SDL_GetError());
+        error("SDL failed to create renderer. ", SDL_GetError());
         return false;
     }
 
@@ -148,7 +153,7 @@ bool Tictactoe::load_board()
 
     if(!boardSurface)
     {
-        Error("SDL failed to create surface from: "
+        error("SDL failed to create surface from: "
             + std::string(board_path) + ". ", SDL_GetError());
         return false;
     }
@@ -162,7 +167,7 @@ bool Tictactoe::load_board()
 
     if(!board_.texture())
     {
-        Error("SDL failed to create texture.", SDL_GetError());
+        error("SDL failed to create texture.", SDL_GetError());
         return false;
     }
     return true;
@@ -190,7 +195,7 @@ bool Tictactoe::load_pieces()
             xSurface->h));
         if(!x_pieces_.back().texture())
         {
-            Error("SDL failed to create texture.", SDL_GetError());
+            error("SDL failed to create texture.", SDL_GetError());
             return false;
         }
 
@@ -203,7 +208,7 @@ bool Tictactoe::load_pieces()
 
         if(!o_pieces_.back().texture())
         {
-            Error("SDL failed to create texture.", SDL_GetError());
+            error("SDL failed to create texture.", SDL_GetError());
             return false;
         }
     }
@@ -215,7 +220,7 @@ bool Tictactoe::piece_dest(const Piece& p, SDL_Rect& dest)
     auto n_coordinate = p.get_normalized_coorinate();
     if (n_coordinate.x == 0 || n_coordinate.y == 0)
     {
-        Error("Failed to calculate normalized coordinates: x=" +
+        error("Failed to calculate normalized coordinates: x=" +
             std::to_string(n_coordinate.x) + " y=" + std::to_string(n_coordinate.y) + ".\n");
         return false;
     }
