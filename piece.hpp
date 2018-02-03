@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 
 #include "raii_sdl.hpp"
+#include "media_manager.hpp"
 
 typedef std::bitset<7> Piece_status;
 
@@ -50,13 +51,13 @@ inline bool operator==(
 class Piece
 {
 public:
-    Piece(raii::Texture_ptr texture, int width, int height):
+    Piece(Graphic_object& obj):
         status_("0000000"),
-        texture_(std::move(texture)),
+        texture_(std::move(obj.texture)),
         src_rect_()
     {
-        src_rect_.w = width;
-        src_rect_.h = height;
+        src_rect_.w = obj.width;
+        src_rect_.h = obj.height;
     }
 
     void activate() { status_.set(0, true); }

@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "media_manager.hpp"
 #include "raii_sdl.hpp"
 
 class Board
@@ -9,11 +10,11 @@ class Board
 public:
     Board() = default;
 
-    void set_texture(raii::Texture_ptr texture, int width, int height)
+    void set_texture(Graphic_object& obj)
     {
-        texture_ = std::move(texture);
-        src_rect_.w = width;
-        src_rect_.h = height;
+        texture_ = std::move(obj.texture);
+        src_rect_.w = obj.width;
+        src_rect_.h = obj.height;
     }
 
     raii::Texture_ptr const& texture() const

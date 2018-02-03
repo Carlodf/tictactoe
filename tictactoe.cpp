@@ -9,23 +9,6 @@ const char* x_bmp_path = "assets/x.bmp";
 const char* o_bmp_path = "assets/o.bmp";
 const char* board_path = "assets/board.bmp";
 
-namespace
-{
-bool surface_from_bmp(
-    const char* filepath,
-    raii::Surface_ptr& surf)
-{
-    surf = raii::Surface_ptr(SDL_LoadBMP(filepath));
-    if(!surf)
-    {
-        error("SDL failed to create surface from: "
-            + std::string(filepath) + ". ", SDL_GetError());
-        return false;
-    }
-    return true;
-}
-}
-
 int Tictactoe::run()
 {
     loop();
@@ -196,70 +179,39 @@ bool Tictactoe::init()
 
 bool Tictactoe::load_board()
 {
-    raii::Surface_ptr boardSurface(nullptr);
+    auto result = media_manager_.texture_from_file(board_path, renderer_);
 
-    boardSurface = raii::Surface_ptr(SDL_LoadBMP(board_path));
-
-    if(!boardSurface)
+    if(result.error())
     {
-        error("SDL failed to create surface from: "
-            + std::string(board_path) + ". ", SDL_GetError());
+        result.error()->log();
         return false;
     }
 
-    board_.set_texture(raii::Texture_ptr(
-        SDL_CreateTextureFromSurface(
-            renderer_.get(),
-            boardSurface.get())),
-        boardSurface->w,
-        boardSurface->h);
-
-    if(!board_.texture())
-    {
-        error("SDL failed to create texture.", SDL_GetError());
-        return false;
-    }
+    board_.set_texture(result.value());
     return true;
 }
 
 bool Tictactoe::load_pieces()
 {
-    raii::Surface_ptr xSurface(nullptr);
-    raii::Surface_ptr oSurface(nullptr);
-
-    if(!surface_from_bmp(x_bmp_path, xSurface) ||
-        !surface_from_bmp(o_bmp_path, oSurface))
-    {
-        return false;
-    }
-
-    //int piece_size = (SCREEN_WIDTH/300) * 85;
-
     for (std::size_t idx = 0u; idx < 9u; idx++)
     {
-        x_pieces_.emplace_back(Piece(
-            raii::Texture_ptr(SDL_CreateTextureFromSurface(
-                renderer_.get(), xSurface.get())),
-            xSurface->w,
-            xSurface->h));
-        if(!x_pieces_.back().texture())
+        auto x_result = media_manager_.texture_from_file(x_bmp_path, renderer_);
+        if(x_result.error())
         {
-            error("SDL failed to create texture.", SDL_GetError());
+            x_result.error()->log();
             return false;
         }
 
-        o_pieces_.emplace_back(Piece(
-            raii::Texture_ptr(SDL_CreateTextureFromSurface(
-                renderer_.get(), oSurface.get())),
-            oSurface->w,
-            oSurface->h
-                ));
+        x_pieces_.emplace_back(x_result.value());
 
-        if(!o_pieces_.back().texture())
+        auto o_result = media_manager_.texture_from_file(o_bmp_path, renderer_);
+        if(x_result.error())
         {
-            error("SDL failed to create texture.", SDL_GetError());
+            o_result.error()->log();
             return false;
         }
+
+        o_pieces_.emplace_back(o_result.value());
     }
     return true;
 }

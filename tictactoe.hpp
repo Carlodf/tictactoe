@@ -1,11 +1,10 @@
 #pragma once
 
-#include <vector>
-
 #include "board.hpp"
 #include "piece.hpp"
 #include "raii_sdl.hpp"
 #include "text_renderer.hpp"
+#include "media_manager.hpp"
 
 const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 1200;
@@ -28,7 +27,8 @@ public:
         sdl_(),
         ttf_(),
         window_(),
-        text_renderer_(font_path)
+        text_renderer_(font_path),
+        media_manager_()
     {
         x_pieces_.reserve(5u);
         o_pieces_.reserve(5u);
@@ -57,6 +57,7 @@ private:
     raii::Window_ptr window_;
     raii::Renderer_ptr renderer_;
     Text_renderer text_renderer_;
+    Media_manager media_manager_;
 
     int render();
     void poll_input_events();
