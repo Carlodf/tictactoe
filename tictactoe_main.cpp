@@ -1,11 +1,12 @@
 #include "tictactoe.hpp"
+#include <cstdlib>
 
 int main()
 {
     Tictactoe game;
     if(!game.init())
     {
-        return 1;
+        exit(1);
     }
-    return game.run();
+    exit(game.run());
 }

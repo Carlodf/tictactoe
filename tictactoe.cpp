@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstdlib>
 
 #include "error.hpp"
 #include "color_palette.hpp"
