@@ -7,7 +7,5 @@ int main()
     {
         return 1;
     }
-    game.update();
-    game.render();
-    return 0;
+    return game.run();
 }

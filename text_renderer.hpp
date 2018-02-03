@@ -59,11 +59,13 @@ public:
         const raii::Renderer_ptr& ren);
 
     bool set_background(const SDL_Rect& bkg, const RGB_palette& color);
+
     bool render_messages(
         const std::vector<std::string>& message_keys,
         const raii::Renderer_ptr& ren,
         SDL_Rect& dest,
         bool render_bkg);
+
     SDL_Rect get_src_rect() const;
 
 

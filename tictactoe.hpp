@@ -44,10 +44,7 @@ public:
     Tictactoe(Tictactoe&&) = delete;
 
     bool init();
-    void render();
-    void poll_input_events() const;
-    bool update();
-    bool status_is_quit() const;
+    int run();
 
 private:
     Board board_;
@@ -60,6 +57,12 @@ private:
     raii::Window_ptr window_;
     raii::Renderer_ptr renderer_;
     Text_renderer text_renderer_;
+
+    int render();
+    void poll_input_events();
+    bool update();
+    void loop();
+    bool status_is_quit() const;
 
     bool load_board();
     bool load_pieces();

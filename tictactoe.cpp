@@ -26,6 +26,12 @@ bool surface_from_bmp(
 }
 }
 
+int Tictactoe::run()
+{
+    loop();
+    return 0;
+}
+
 bool Tictactoe::status_is_quit() const
 {
     return status_.test(1);
@@ -49,54 +55,88 @@ bool Tictactoe::update()
 
     return true;
 }
-
-void Tictactoe::poll_input_events() const
+void Tictactoe::loop()
 {
+    while(!status_is_quit())
+    {
+        poll_input_events();
+        update();
+        render();
+    }
 }
 
-void Tictactoe::render()
+void Tictactoe::poll_input_events()
 {
-    SDL_RenderClear(renderer_.get());
+    SDL_Event evnt;
+    while(SDL_PollEvent(&evnt))
+    {
+        switch(evnt.type)
+        {
+            case SDL_KEYDOWN:
+                if (evnt.key.keysym.sym == SDLK_q){ status_ |= QUIT;}
+            break;
+        }
+    }
+}
+
+int Tictactoe::render()
+{
+    if(SDL_RenderClear(renderer_.get()) < 0)
+    {
+        return 1;
+    }
     SDL_Rect xdest;
     SDL_Rect odest;
     if (!piece_dest(x_pieces_.at(0), xdest) ||
      !piece_dest(o_pieces_.at(0), odest))
     {
         error("Failed to render pieces.");
-        exit(1);
+        return 1;
     }
 
-    SDL_RenderCopy(
+    if(SDL_RenderCopy(
         renderer_.get(),
         board_.texture().get(),
         NULL,
-        NULL);
+        NULL) < 0)
+    {
+        return 1;
+    }
 
-    SDL_RenderCopy(
+    if(SDL_RenderCopy(
         renderer_.get(),
         x_pieces_.back().texture().get(),
         NULL,
-        &xdest);
+        &xdest))
+    {
+        return 1;
+    }
 
-    SDL_RenderCopy(
+    if(SDL_RenderCopy(
         renderer_.get(),
         o_pieces_.back().texture().get(),
         NULL,
-        &odest);
+        &odest))
+    {
+        return 1;
+    }
+
     SDL_Rect text_dest;
     text_dest.x = 0;
     text_dest.y = 0;
 
-    text_renderer_.render_messages(
+    if(!text_renderer_.render_messages(
         {"test"},
         renderer_,
         text_dest,
-        true);
+        true))
+    {
+        return 1;
+    }
 
     SDL_RenderPresent(renderer_.get());
 
-    SDL_Delay(2000);
-
+    return 0;
 }
 
 bool Tictactoe::init()
