@@ -17,17 +17,31 @@ public:
         src_rect_.h = obj.height;
     }
 
+    void update(int x, int y, int w, int h)
+    {
+        dst_rect_.x = x;
+        dst_rect_.y = y;
+        dst_rect_.w = w;
+        dst_rect_.h = h;
+    }
+
     raii::Texture_ptr const& texture() const
     {
         return texture_;
     }
 
-    const SDL_Rect& rect() const
+    const SDL_Rect& src_rect() const
     {
         return src_rect_;
     }
 
+    const SDL_Rect& dst_rect() const
+    {
+        return dst_rect_;
+    }
+
 private:
     raii::Texture_ptr texture_;
-    SDL_Rect src_rect_;
+    SDL_Rect src_rect_ = { 0, 0, 0, 0 };
+    SDL_Rect dst_rect_ = { 0, 0, 0, 0 };
 };

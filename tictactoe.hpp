@@ -10,10 +10,15 @@ const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 1200;
 const std::string font_path = "assets/NotoSans-Light.ttf";
 
-typedef std::bitset<2> Game_status;
+typedef std::bitset<7> Game_status;
 
-const Game_status           PLAY("01");
-const Game_status           QUIT("10");
+const Game_status PLAY(     "0000001");
+const Game_status QUIT(     "0000010");
+const Game_status X_TURN(   "0000100");
+const Game_status Y_TURN(   "0001000");
+const Game_status END(      "0010000");
+const Game_status BOH(      "0100000");
+const Game_status PANIC(    "1000000");
 
 class Tictactoe
 {
@@ -64,8 +69,15 @@ private:
     bool update();
     void loop();
     bool status_is_quit() const;
+    bool status_is_panic() const;
+    bool x_turn() const;
+    bool o_turn() const;
+    void swap_turn();
 
     bool load_board();
     bool load_pieces();
     bool piece_dest(const Piece& p, SDL_Rect& dest);
+    void update_piece(Piece& piece);
+    void handle_touch(float x, float y);
+    void set_piece_coordinates(float x, float y, Piece& p);
 };

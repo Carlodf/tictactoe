@@ -1,9 +1,12 @@
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 
 #include "error.hpp"
 #include "color_palette.hpp"
 #include "tictactoe.hpp"
+
+#include <iostream>
 
 const char* x_bmp_path = "assets/x.bmp";
 const char* o_bmp_path = "assets/o.bmp";
@@ -19,11 +22,35 @@ bool Tictactoe::status_is_quit() const
 {
     return status_.test(1);
 }
+bool Tictactoe::status_is_panic() const
+{
+    return status_.test(6);
+}
+bool Tictactoe::x_turn() const
+{
+    return status_.test(2);
+}
+bool Tictactoe::o_turn() const
+{
+    return status_.test(3);
+}
+void Tictactoe::swap_turn()
+{
+    status_.flip(2);
+    status_.flip(3);
+}
 
 bool Tictactoe::update()
 {
-    x_pieces_.at(0).set_position(A|P1);
-    o_pieces_.at(0).set_position(C|P3);
+    board_.update(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
+    for (auto& piece : x_pieces_)
+    {
+        update_piece(piece);
+    }
+    for (auto& piece : o_pieces_)
+    {
+        update_piece(piece);
+    }
     SDL_Rect bkg;
     bkg.x = 0;
     bkg.y = 0;
@@ -40,7 +67,8 @@ bool Tictactoe::update()
 }
 void Tictactoe::loop()
 {
-    while(!status_is_quit())
+    status_|=X_TURN;
+    while(!status_is_quit() && !status_is_panic())
     {
         poll_input_events();
         update();
@@ -58,6 +86,9 @@ void Tictactoe::poll_input_events()
             case SDL_KEYDOWN:
                 if (evnt.key.keysym.sym == SDLK_q){ status_ |= QUIT;}
             break;
+            case SDL_FINGERDOWN:
+                handle_touch(evnt.tfinger.x, evnt.tfinger.y);
+            break;
         }
     }
 }
@@ -68,40 +99,44 @@ int Tictactoe::render()
     {
         return 1;
     }
-    SDL_Rect xdest;
-    SDL_Rect odest;
-    if (!piece_dest(x_pieces_.at(0), xdest) ||
-     !piece_dest(o_pieces_.at(0), odest))
-    {
-        error("Failed to render pieces.");
-        return 1;
-    }
 
     if(SDL_RenderCopy(
         renderer_.get(),
         board_.texture().get(),
-        NULL,
-        NULL) < 0)
+        &board_.src_rect(),
+        &board_.dst_rect()) < 0)
     {
         return 1;
     }
 
-    if(SDL_RenderCopy(
-        renderer_.get(),
-        x_pieces_.back().texture().get(),
-        NULL,
-        &xdest))
+    for (auto& piece : x_pieces_)
     {
-        return 1;
+        if(piece.is_active())
+        {
+            if(SDL_RenderCopy(
+                renderer_.get(),
+                piece.texture().get(),
+                NULL,
+                &piece.dst_rect()))
+            {
+                return 1;
+            }
+        }
     }
 
-    if(SDL_RenderCopy(
-        renderer_.get(),
-        o_pieces_.back().texture().get(),
-        NULL,
-        &odest))
+    for (auto& piece : o_pieces_)
     {
-        return 1;
+        if(piece.is_active())
+        {
+            if(SDL_RenderCopy(
+                renderer_.get(),
+                piece.texture().get(),
+                NULL,
+                &piece.dst_rect()))
+            {
+                return 1;
+            }
+        }
     }
 
     SDL_Rect text_dest;
@@ -216,19 +251,88 @@ bool Tictactoe::load_pieces()
     return true;
 }
 
-bool Tictactoe::piece_dest(const Piece& p, SDL_Rect& dest)
+void Tictactoe::update_piece(Piece& p)
 {
+    if(!p.is_active())
+    {
+        return;
+    }
     auto n_coordinate = p.get_normalized_coorinate();
+
     if (n_coordinate.x == 0 || n_coordinate.y == 0)
     {
         error("Failed to calculate normalized coordinates: x=" +
-            std::to_string(n_coordinate.x) + " y=" + std::to_string(n_coordinate.y) + ".\n");
-        return false;
+            std::to_string(n_coordinate.x) + " y=" +
+            std::to_string(n_coordinate.y) + ".\n");
+        status_|=PANIC;
+        return;
     }
-    std::size_t scale_factor = SCREEN_WIDTH / board_.rect().w;
-    dest.w = p.rect().w * scale_factor;
-    dest.h = p.rect().h * scale_factor;
-    dest.x = ((SCREEN_WIDTH/n_coordinate.x) - dest.w)/2;
-    dest.y = ((SCREEN_HEIGHT/n_coordinate.y) - dest.h)/2;
-    return true;;
+    std::size_t scale_factor = board_.dst_rect().w / board_.src_rect().w;
+    int w = p.src_rect().w * scale_factor;
+    int h = p.src_rect().h * scale_factor;
+    int x = ((n_coordinate.x * SCREEN_WIDTH/3) - w - (((SCREEN_WIDTH/3) - w)/2));
+    int y = ((n_coordinate.y * SCREEN_HEIGHT/3) - h - (((SCREEN_WIDTH/3) - h)/2));
+    p.update(x, y, w, h);
+}
+void Tictactoe::handle_touch(float x, float y)
+{
+    std::cout << "x=" << x << " y=" << y << std::endl;
+    float norm_x = x;
+    float norm_y = y;
+    std::cout << "NORM: x=" << x << " y=" << y << std::endl;
+    if(x_turn())
+    {
+        for(auto& piece : x_pieces_)
+        {
+            if (!piece.is_active())
+            {
+                set_piece_coordinates(norm_x, norm_y, piece);
+                swap_turn();
+                return;
+            }
+        }
+    }
+    else if(o_turn())
+    {
+        for(auto& piece : o_pieces_)
+        {
+            if (!piece.is_active())
+            {
+                set_piece_coordinates(norm_x, norm_y, piece);
+                swap_turn();
+                return;
+            }
+        }
+    }
+}
+
+void Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
+{
+    Piece_status position("0000000");
+    if (x <= 0.35)
+    {
+        position|=A;
+    }
+    else if (x > 0.35 && x <= 0.78)
+    {
+        position|=B;
+    }
+    else if (x > 0.7 && x <= 1)
+    {
+        position|=C;
+    }
+    if (y <= 0.35)
+    {
+        position|=P1;
+    }
+    else if (y > 0.35 && y <= 0.7)
+    {
+        position|=P2;
+    }
+    else if (y > 0.7 && y <= 1)
+    {
+        position|=P3;
+    }
+    p.set_position(position);
+    p.activate();
 }

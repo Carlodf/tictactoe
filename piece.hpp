@@ -19,12 +19,12 @@ typedef std::bitset<7> Piece_status;
 //      ===============
 //      P3|   |   |   |
 //      ===============
-const Piece_status A(       "0001000");
+const Piece_status A(       "0000010");
 const Piece_status B(       "0000100");
-const Piece_status C(       "0000010");
-const Piece_status P1(      "1000000");
+const Piece_status C(       "0001000");
+const Piece_status P1(      "0010000");
 const Piece_status P2(      "0100000");
-const Piece_status P3(      "0010000");
+const Piece_status P3(      "1000000");
 const Piece_status ACTIVE(  "0000001");
 /////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +62,8 @@ public:
 
     void activate() { status_.set(0, true); }
     void deactivate() { status_.set(0, false); }
+
+    bool is_active() { return status_.test(0); }
 
     void set_position(const std::bitset<7>& position)
     {
@@ -102,6 +104,14 @@ public:
         return coordinate;
     }
 
+    void update(int x, int y, int w, int h)
+    {
+        dst_rect_.x = x;
+        dst_rect_.y = y;
+        dst_rect_.w = w;
+        dst_rect_.h = h;
+    }
+
     raii::Texture_ptr const& texture() const
     {
         return texture_;
@@ -112,9 +122,14 @@ public:
         return status_;
     }
 
-    const SDL_Rect& rect() const
+    const SDL_Rect& src_rect() const
     {
         return src_rect_;
+    }
+
+    const SDL_Rect& dst_rect() const
+    {
+        return dst_rect_;
     }
 
 private:
@@ -122,4 +137,5 @@ private:
     Piece_status status_;
     raii::Texture_ptr texture_;
     SDL_Rect src_rect_;
+    SDL_Rect dst_rect_;
 };
