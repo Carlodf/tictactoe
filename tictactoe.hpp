@@ -67,7 +67,6 @@ private:
     int render();
     void poll_input_events();
     bool update();
-    void loop();
     bool status_is_quit() const;
     bool status_is_panic() const;
     bool x_turn() const;

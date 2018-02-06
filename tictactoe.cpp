@@ -14,7 +14,13 @@ const char* board_path = "assets/board.bmp";
 
 int Tictactoe::run()
 {
-    loop();
+    status_|=X_TURN;
+    while(!status_is_quit() && !status_is_panic())
+    {
+        poll_input_events();
+        update();
+        render();
+    }
     return 0;
 }
 
@@ -64,16 +70,6 @@ bool Tictactoe::update()
         renderer_);
 
     return true;
-}
-void Tictactoe::loop()
-{
-    status_|=X_TURN;
-    while(!status_is_quit() && !status_is_panic())
-    {
-        poll_input_events();
-        update();
-        render();
-    }
 }
 
 void Tictactoe::poll_input_events()
