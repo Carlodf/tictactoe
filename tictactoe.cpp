@@ -1,12 +1,9 @@
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
 
 #include "error.hpp"
 #include "color_palette.hpp"
 #include "tictactoe.hpp"
-
-#include <iostream>
 
 const char* x_bmp_path = "assets/x.bmp";
 const char* o_bmp_path = "assets/o.bmp";
@@ -252,10 +249,8 @@ void Tictactoe::update_piece(Piece& p)
 }
 void Tictactoe::handle_touch(float x, float y)
 {
-    std::cout << "x=" << x << " y=" << y << std::endl;
     float norm_x = x;
     float norm_y = y;
-    std::cout << "NORM: x=" << x << " y=" << y << std::endl;
     if(status_.x_turn())
     {
         for(auto& piece : x_pieces_)
