@@ -112,6 +112,15 @@ public:
         dst_rect_.h = h;
     }
 
+    bool render(const raii::Renderer_ptr& renderer)
+    {
+        return SDL_RenderCopy(
+            renderer.get(),
+            texture_.get(),
+            &src_rect_,
+            &dst_rect_) == 0;
+    }
+
     raii::Texture_ptr const& texture() const
     {
         return texture_;

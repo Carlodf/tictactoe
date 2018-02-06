@@ -55,19 +55,18 @@ private:
     Text_renderer text_renderer_;
     Media_manager media_manager_;
 
-    int render();
     void poll_input_events();
     bool update();
-    bool status_is_quit() const;
-    bool status_is_panic() const;
-    bool x_turn() const;
-    bool o_turn() const;
-    void swap_turn();
+    int render();
 
     bool load_board();
     bool load_pieces();
-    bool piece_dest(const Piece& p, SDL_Rect& dest);
-    void update_piece(Piece& piece);
+
     void handle_touch(float x, float y);
+    void update_piece(Piece& piece);
+
+    Piece& get_non_active_piece(std::vector<Piece>& pieces);
+    bool piece_dest(const Piece& p, SDL_Rect& dest);
+    void update_pieces(std::vector<Piece>& pieces);
     void set_piece_coordinates(float x, float y, Piece& p);
 };

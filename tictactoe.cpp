@@ -5,128 +5,10 @@
 #include "color_palette.hpp"
 #include "tictactoe.hpp"
 
-const char* x_bmp_path = "assets/x.bmp";
-const char* o_bmp_path = "assets/o.bmp";
-const char* board_path = "assets/board.bmp";
-
-int Tictactoe::run()
-{
-    status_.set(X_TURN);
-    while(!status_.quit())
-    {
-        poll_input_events();
-        update();
-        render();
-    }
-    return 0;
-}
-
-bool Tictactoe::update()
-{
-    board_.update(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
-    for (auto& piece : x_pieces_)
-    {
-        update_piece(piece);
-    }
-    for (auto& piece : o_pieces_)
-    {
-        update_piece(piece);
-    }
-    SDL_Rect bkg;
-    bkg.x = 0;
-    bkg.y = 0;
-    bkg.w = SCREEN_WIDTH/3;
-    bkg.h = 3 * SCREEN_HEIGHT/6;
-    text_renderer_.set_background(bkg, {black.r, black.g, black.b, 180});
-    text_renderer_.add_message(
-        "test",
-        "Print to screen test.",
-        white,
-        renderer_);
-
-    return true;
-}
-
-void Tictactoe::poll_input_events()
-{
-    SDL_Event evnt;
-    while(SDL_PollEvent(&evnt))
-    {
-        switch(evnt.type)
-        {
-            case SDL_KEYDOWN:
-                if (evnt.key.keysym.sym == SDLK_q){ status_.set(QUIT);}
-            break;
-            case SDL_FINGERDOWN:
-                handle_touch(evnt.tfinger.x, evnt.tfinger.y);
-            break;
-        }
-    }
-}
-
-int Tictactoe::render()
-{
-    if(SDL_RenderClear(renderer_.get()) < 0)
-    {
-        return 1;
-    }
-
-    if(SDL_RenderCopy(
-        renderer_.get(),
-        board_.texture().get(),
-        &board_.src_rect(),
-        &board_.dst_rect()) < 0)
-    {
-        return 1;
-    }
-
-    for (auto& piece : x_pieces_)
-    {
-        if(piece.is_active())
-        {
-            if(SDL_RenderCopy(
-                renderer_.get(),
-                piece.texture().get(),
-                NULL,
-                &piece.dst_rect()))
-            {
-                return 1;
-            }
-        }
-    }
-
-    for (auto& piece : o_pieces_)
-    {
-        if(piece.is_active())
-        {
-            if(SDL_RenderCopy(
-                renderer_.get(),
-                piece.texture().get(),
-                NULL,
-                &piece.dst_rect()))
-            {
-                return 1;
-            }
-        }
-    }
-
-    SDL_Rect text_dest;
-    text_dest.x = 0;
-    text_dest.y = 0;
-
-    if(!text_renderer_.render_messages(
-        {"test"},
-        renderer_,
-        text_dest,
-        true))
-    {
-        return 1;
-    }
-
-    SDL_RenderPresent(renderer_.get());
-
-    return 0;
-}
+const std::string X_BMP_PATH = "assets/x.bmp";
+const std::string O_BMP_PATH = "assets/o.bmp";
+const std::string BOARD_PATH = "assets/board.bmp";
+const std::string TITLE("Tic - Tac - Toe");
 
 bool Tictactoe::init()
 {
@@ -148,7 +30,7 @@ bool Tictactoe::init()
     }
 
     window_ = raii::Window_ptr(SDL_CreateWindow(
-        "Tic - Tac - Toe",
+        TITLE.c_str(),
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         SCREEN_WIDTH,
@@ -185,9 +67,103 @@ bool Tictactoe::init()
     return true;
 }
 
+int Tictactoe::run()
+{
+    status_.set(X_TURN);
+    while(!status_.quit())
+    {
+        poll_input_events();
+        update();
+        render();
+    }
+    return 0;
+}
+
+void Tictactoe::poll_input_events()
+{
+    SDL_Event evnt;
+    while(SDL_PollEvent(&evnt))
+    {
+        switch(evnt.type)
+        {
+            case SDL_KEYDOWN:
+                if (evnt.key.keysym.sym == SDLK_q){ status_.set(QUIT);}
+            break;
+            case SDL_FINGERDOWN:
+                handle_touch(evnt.tfinger.x, evnt.tfinger.y);
+            break;
+        }
+    }
+}
+
+bool Tictactoe::update()
+{
+    board_.update(0, 0, SCREEN_WIDTH, SCREEN_WIDTH);
+
+    update_pieces(x_pieces_);
+    update_pieces(o_pieces_);
+
+    SDL_Rect bkg = { 0, 0, SCREEN_WIDTH/3, 3 * SCREEN_HEIGHT/6 };
+
+    text_renderer_.set_background(bkg, {black.r, black.g, black.b, 180});
+    text_renderer_.add_message(
+        "test",
+        "Print to screen test.",
+        white,
+        renderer_);
+
+    return true;
+}
+
+int Tictactoe::render()
+{
+    if(SDL_RenderClear(renderer_.get()) < 0)
+    {
+        return 1;
+    }
+
+    if(!board_.render(renderer_))
+    {
+        return 1;
+    }
+
+    for (auto& piece : x_pieces_)
+    {
+        if(piece.is_active())
+        {
+            if(!piece.render(renderer_)) { return 1;}
+        }
+    }
+
+    for (auto& piece : o_pieces_)
+    {
+        if(piece.is_active())
+        {
+            if(!piece.render(renderer_)) { return 1;}
+        }
+    }
+
+    SDL_Rect text_dest= { 0, 0, 0, 0 };
+
+    if(!text_renderer_.render_messages(
+        {"test"},
+        renderer_,
+        text_dest,
+        true))
+    {
+        return 1;
+    }
+
+    SDL_RenderPresent(renderer_.get());
+
+    return 0;
+}
+
 bool Tictactoe::load_board()
 {
-    auto result = media_manager_.texture_from_file(board_path, renderer_);
+    auto result = media_manager_.texture_from_file(
+        BOARD_PATH,
+        renderer_);
 
     if(result.error())
     {
@@ -203,7 +179,10 @@ bool Tictactoe::load_pieces()
 {
     for (std::size_t idx = 0u; idx < 9u; idx++)
     {
-        auto x_result = media_manager_.texture_from_file(x_bmp_path, renderer_);
+        auto x_result = media_manager_.texture_from_file(
+            X_BMP_PATH,
+            renderer_);
+
         if(x_result.error())
         {
             x_result.error()->log();
@@ -212,7 +191,9 @@ bool Tictactoe::load_pieces()
 
         x_pieces_.emplace_back(x_result.value());
 
-        auto o_result = media_manager_.texture_from_file(o_bmp_path, renderer_);
+        auto o_result = media_manager_.texture_from_file(
+            O_BMP_PATH,
+            renderer_);
         if(x_result.error())
         {
             o_result.error()->log();
@@ -222,6 +203,42 @@ bool Tictactoe::load_pieces()
         o_pieces_.emplace_back(o_result.value());
     }
     return true;
+}
+
+void Tictactoe::handle_touch(float x, float y)
+{
+    float norm_x = x;
+    float norm_y = y;
+    if(status_.x_turn())
+    {
+        set_piece_coordinates(norm_x, norm_y, get_non_active_piece(x_pieces_));
+    }
+    else if(status_.o_turn())
+    {
+        set_piece_coordinates(norm_x, norm_y, get_non_active_piece(o_pieces_));
+    }
+    status_.swap_turn();
+}
+
+Piece& Tictactoe::get_non_active_piece(std::vector<Piece>& pieces)
+{
+    std::size_t idx = 0u;
+    for(; idx < pieces.size(); idx++)
+    {
+        if (!pieces.at(idx).is_active())
+        {
+            break;
+        }
+    }
+    return pieces.at(idx);
+}
+
+void Tictactoe::update_pieces(std::vector<Piece>& pieces)
+{
+    for (auto& piece : pieces)
+    {
+        update_piece(piece);
+    }
 }
 
 void Tictactoe::update_piece(Piece& p)
@@ -240,41 +257,20 @@ void Tictactoe::update_piece(Piece& p)
         status_.set(QUIT);
         return;
     }
-    std::size_t scale_factor = board_.dst_rect().w / board_.src_rect().w;
+    int scale_factor = board_.dst_rect().w / board_.src_rect().w;
+
+    int width_unit = SCREEN_WIDTH/3;
+    int height_unit = SCREEN_HEIGHT/3;
+
     int w = p.src_rect().w * scale_factor;
     int h = p.src_rect().h * scale_factor;
-    int x = ((n_coordinate.x * SCREEN_WIDTH/3) - w - (((SCREEN_WIDTH/3) - w)/2));
-    int y = ((n_coordinate.y * SCREEN_HEIGHT/3) - h - (((SCREEN_WIDTH/3) - h)/2));
+
+    int piece_width_offset =(((width_unit) - w)/2);
+    int piece_height_offset =(((height_unit) - h)/2);
+
+    int x = ((n_coordinate.x * width_unit) - w - piece_width_offset);
+    int y = ((n_coordinate.y * height_unit) - h - piece_height_offset);
     p.update(x, y, w, h);
-}
-void Tictactoe::handle_touch(float x, float y)
-{
-    float norm_x = x;
-    float norm_y = y;
-    if(status_.x_turn())
-    {
-        for(auto& piece : x_pieces_)
-        {
-            if (!piece.is_active())
-            {
-                set_piece_coordinates(norm_x, norm_y, piece);
-                status_.swap_turn();
-                return;
-            }
-        }
-    }
-    else if(status_.o_turn())
-    {
-        for(auto& piece : o_pieces_)
-        {
-            if (!piece.is_active())
-            {
-                set_piece_coordinates(norm_x, norm_y, piece);
-                status_.swap_turn();
-                return;
-            }
-        }
-    }
 }
 
 void Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
