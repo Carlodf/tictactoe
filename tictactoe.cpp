@@ -14,36 +14,14 @@ const char* board_path = "assets/board.bmp";
 
 int Tictactoe::run()
 {
-    status_|=X_TURN;
-    while(!status_is_quit() && !status_is_panic())
+    status_.set(X_TURN);
+    while(!status_.quit())
     {
         poll_input_events();
         update();
         render();
     }
     return 0;
-}
-
-bool Tictactoe::status_is_quit() const
-{
-    return status_.test(1);
-}
-bool Tictactoe::status_is_panic() const
-{
-    return status_.test(6);
-}
-bool Tictactoe::x_turn() const
-{
-    return status_.test(2);
-}
-bool Tictactoe::o_turn() const
-{
-    return status_.test(3);
-}
-void Tictactoe::swap_turn()
-{
-    status_.flip(2);
-    status_.flip(3);
 }
 
 bool Tictactoe::update()
@@ -80,7 +58,7 @@ void Tictactoe::poll_input_events()
         switch(evnt.type)
         {
             case SDL_KEYDOWN:
-                if (evnt.key.keysym.sym == SDLK_q){ status_ |= QUIT;}
+                if (evnt.key.keysym.sym == SDLK_q){ status_.set(QUIT);}
             break;
             case SDL_FINGERDOWN:
                 handle_touch(evnt.tfinger.x, evnt.tfinger.y);
@@ -205,6 +183,8 @@ bool Tictactoe::init()
 
     load_pieces();
 
+    status_.set(PLAY);
+
     return true;
 }
 
@@ -260,7 +240,7 @@ void Tictactoe::update_piece(Piece& p)
         error("Failed to calculate normalized coordinates: x=" +
             std::to_string(n_coordinate.x) + " y=" +
             std::to_string(n_coordinate.y) + ".\n");
-        status_|=PANIC;
+        status_.set(QUIT);
         return;
     }
     std::size_t scale_factor = board_.dst_rect().w / board_.src_rect().w;
@@ -276,26 +256,26 @@ void Tictactoe::handle_touch(float x, float y)
     float norm_x = x;
     float norm_y = y;
     std::cout << "NORM: x=" << x << " y=" << y << std::endl;
-    if(x_turn())
+    if(status_.x_turn())
     {
         for(auto& piece : x_pieces_)
         {
             if (!piece.is_active())
             {
                 set_piece_coordinates(norm_x, norm_y, piece);
-                swap_turn();
+                status_.swap_turn();
                 return;
             }
         }
     }
-    else if(o_turn())
+    else if(status_.o_turn())
     {
         for(auto& piece : o_pieces_)
         {
             if (!piece.is_active())
             {
                 set_piece_coordinates(norm_x, norm_y, piece);
-                swap_turn();
+                status_.swap_turn();
                 return;
             }
         }
