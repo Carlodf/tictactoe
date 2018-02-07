@@ -1,10 +1,6 @@
 #pragma once
 
 #include <bitset>
-#include <SDL2/SDL.h>
-
-#include "raii_sdl.hpp"
-#include "media_manager.hpp"
 
 typedef std::bitset<7> Piece_status;
 
@@ -51,14 +47,7 @@ inline bool operator==(
 class Piece
 {
 public:
-    Piece(Graphic_object& obj):
-        status_("0000000"),
-        texture_(std::move(obj.texture)),
-        src_rect_()
-    {
-        src_rect_.w = obj.width;
-        src_rect_.h = obj.height;
-    }
+    Piece() = default;
 
     void activate() { status_.set(0, true); }
     void deactivate() { status_.set(0, false); }
@@ -104,47 +93,12 @@ public:
         return coordinate;
     }
 
-    void update(int x, int y, int w, int h)
-    {
-        dst_rect_.x = x;
-        dst_rect_.y = y;
-        dst_rect_.w = w;
-        dst_rect_.h = h;
-    }
-
-    bool render(const raii::Renderer_ptr& renderer)
-    {
-        return SDL_RenderCopy(
-            renderer.get(),
-            texture_.get(),
-            &src_rect_,
-            &dst_rect_) == 0;
-    }
-
-    raii::Texture_ptr const& texture() const
-    {
-        return texture_;
-    }
-
-    const Piece_status status() const
+    const Piece_status& status()
     {
         return status_;
     }
 
-    const SDL_Rect& src_rect() const
-    {
-        return src_rect_;
-    }
-
-    const SDL_Rect& dst_rect() const
-    {
-        return dst_rect_;
-    }
-
 private:
 
-    Piece_status status_;
-    raii::Texture_ptr texture_;
-    SDL_Rect src_rect_;
-    SDL_Rect dst_rect_;
+    Piece_status status_ = 0;
 };

@@ -122,24 +122,24 @@ int Tictactoe::render()
         return 1;
     }
 
-    if(!board_.render(renderer_))
+    if(!(board_.render(renderer_) == 0))
     {
         return 1;
     }
 
     for (auto& piece : x_pieces_)
     {
-        if(piece.is_active())
+        if(piece.object().is_active())
         {
-            if(!piece.render(renderer_)) { return 1;}
+            if(!(piece.render(renderer_) == 0)) { return 1;}
         }
     }
 
     for (auto& piece : o_pieces_)
     {
-        if(piece.is_active())
+        if(piece.object().is_active())
         {
-            if(!piece.render(renderer_)) { return 1;}
+            if(!(piece.render(renderer_) == 0)) { return 1;}
         }
     }
 
@@ -177,7 +177,7 @@ bool Tictactoe::load_board()
 
 bool Tictactoe::load_pieces()
 {
-    for (std::size_t idx = 0u; idx < 9u; idx++)
+    for (std::size_t idx = 0u; idx < 5u; idx++)
     {
         auto x_result = media_manager_.texture_from_file(
             X_BMP_PATH,
@@ -189,7 +189,7 @@ bool Tictactoe::load_pieces()
             return false;
         }
 
-        x_pieces_.emplace_back(x_result.value());
+        x_pieces_.at(idx).set_texture(x_result.value());
 
         auto o_result = media_manager_.texture_from_file(
             O_BMP_PATH,
@@ -200,7 +200,7 @@ bool Tictactoe::load_pieces()
             return false;
         }
 
-        o_pieces_.emplace_back(o_result.value());
+        o_pieces_.at(idx).set_texture(o_result.value());
     }
     return true;
 }
@@ -220,20 +220,20 @@ void Tictactoe::handle_touch(float x, float y)
     status_.swap_turn();
 }
 
-Piece& Tictactoe::get_non_active_piece(std::vector<Piece>& pieces)
+Piece& Tictactoe::get_non_active_piece(std::vector<Renderer<Piece>>& pieces)
 {
     std::size_t idx = 0u;
     for(; idx < pieces.size(); idx++)
     {
-        if (!pieces.at(idx).is_active())
+        if (!pieces.at(idx).object().is_active())
         {
             break;
         }
     }
-    return pieces.at(idx);
+    return pieces.at(idx).object();
 }
 
-void Tictactoe::update_pieces(std::vector<Piece>& pieces)
+void Tictactoe::update_pieces(std::vector<Renderer<Piece>>& pieces)
 {
     for (auto& piece : pieces)
     {
@@ -241,13 +241,13 @@ void Tictactoe::update_pieces(std::vector<Piece>& pieces)
     }
 }
 
-void Tictactoe::update_piece(Piece& p)
+void Tictactoe::update_piece(Renderer<Piece>& p)
 {
-    if(!p.is_active())
+    if(!p.object().is_active())
     {
         return;
     }
-    auto n_coordinate = p.get_normalized_coorinate();
+    auto n_coordinate = p.object().get_normalized_coorinate();
 
     if (n_coordinate.x == 0 || n_coordinate.y == 0)
     {

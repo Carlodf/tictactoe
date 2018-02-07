@@ -3,27 +3,11 @@
 #include "error.hpp"
 #include "raii_sdl.hpp"
 #include "result.hpp"
+#include "graphic_object.hpp"
 
 #include <string>
 #include <tuple>
 #include <unordered_map>
-
-struct Graphic_object
-{
-    Graphic_object() = default;
-    Graphic_object(
-        SDL_Texture* texture,
-        int height,
-        int width) :
-        texture(std::move(texture)),
-        height(height),
-        width(width)
-    {}
-
-    raii::Texture_ptr texture = nullptr;
-    int height = 0;
-    int width = 0;
-};
 
 class Media_manager
 {

@@ -6,6 +6,7 @@
 #include "text_renderer.hpp"
 #include "media_manager.hpp"
 #include "tictactoe_status.hpp"
+#include "renderer.hpp"
 
 const int SCREEN_WIDTH = 1200;
 const int SCREEN_HEIGHT = 1200;
@@ -17,8 +18,8 @@ public:
 
     Tictactoe() :
         board_(),
-        x_pieces_(),
-        o_pieces_(),
+        x_pieces_(5u),
+        o_pieces_(5u),
         status_(),
         sdl_(),
         ttf_(),
@@ -26,8 +27,6 @@ public:
         text_renderer_(font_path),
         media_manager_()
     {
-        x_pieces_.reserve(5u);
-        o_pieces_.reserve(5u);
     }
 
     ~Tictactoe()
@@ -43,9 +42,9 @@ public:
     int run();
 
 private:
-    Board board_;
-    std::vector<Piece> x_pieces_;
-    std::vector<Piece> o_pieces_;
+    Renderer<Board> board_;
+    std::vector<Renderer<Piece>> x_pieces_;
+    std::vector<Renderer<Piece>> o_pieces_;
     Status status_;
 
     raii::Sdl sdl_;
@@ -63,10 +62,9 @@ private:
     bool load_pieces();
 
     void handle_touch(float x, float y);
-    void update_piece(Piece& piece);
+    void update_piece(Renderer<Piece>& piece);
 
-    Piece& get_non_active_piece(std::vector<Piece>& pieces);
-    bool piece_dest(const Piece& p, SDL_Rect& dest);
-    void update_pieces(std::vector<Piece>& pieces);
+    Piece& get_non_active_piece(std::vector<Renderer<Piece>>& pieces);
+    void update_pieces(std::vector<Renderer<Piece>>& pieces);
     void set_piece_coordinates(float x, float y, Piece& p);
 };
