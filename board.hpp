@@ -17,7 +17,7 @@ struct Coordinate
 
 typedef std::bitset<7> Board_position;
 
-//The Board_position bit sets decribe the position of a piece on the board
+//The Board position bit sets decribes the position of a piece on the board
 //and whether or not the piece is active (present on the board).
 //
 //        | A | B | C |
@@ -46,16 +46,12 @@ public:
         board_(3u)
     {}
 
-    //This methods retrieves from the status of a piece two numbers representing
-    //the factor to divide the board for in order to get the normalized
-    //coordinate of a piece. i.e.: a piece in the top let corner would have as
-    //coordinate (3,3), in the middle (2,2), in the rightmost bottom corner
-    //(1,1).
+    //This methods retrieves from the position of a piece two numbers
+    //representing the coordinate of a piece. i.e.: a piece in the top let
+    //corner would have as coordinate (1,1), in the middle (2,2), in the
+    //rightmost bottom corner (3,3).
     //This type of coordinates is pretty much taylored around how coordinates
     //on screen work, thus origin on the top left corner.
-    //This could be simplified by converting the bit set to unsigned long on
-    //the fly (required to sotre them as keys in a map). However
-    //it would probably be overkilling.
     static Coordinate get_normalized_coorinate(const Board_position& position)
     {
         Coordinate coordinate({0u, 0u});
