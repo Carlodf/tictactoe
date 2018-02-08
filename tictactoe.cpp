@@ -207,17 +207,20 @@ bool Tictactoe::load_pieces()
 
 void Tictactoe::handle_touch(float x, float y)
 {
-    float norm_x = x;
-    float norm_y = y;
+    bool success = false;
     if(status_.x_turn())
     {
-        set_piece_coordinates(norm_x, norm_y, get_non_active_piece(x_pieces_));
+        success = set_piece_coordinates(x, y, get_non_active_piece(x_pieces_));
     }
     else if(status_.o_turn())
     {
-        set_piece_coordinates(norm_x, norm_y, get_non_active_piece(o_pieces_));
+        success = set_piece_coordinates(x, y, get_non_active_piece(o_pieces_));
     }
-    status_.swap_turn();
+    if (success)
+    {
+        status_.swap_turn();
+        //TODO provide visual feedback
+    }
 }
 
 Piece& Tictactoe::get_non_active_piece(std::vector<Renderer<Piece>>& pieces)
@@ -247,7 +250,7 @@ void Tictactoe::update_piece(Renderer<Piece>& p)
     {
         return;
     }
-    auto n_coordinate = p.object().get_normalized_coorinate();
+    auto n_coordinate = Board::get_normalized_coorinate(p.object().status());
 
     if (n_coordinate.x == 0 || n_coordinate.y == 0)
     {
@@ -273,9 +276,9 @@ void Tictactoe::update_piece(Renderer<Piece>& p)
     p.update(x, y, w, h);
 }
 
-void Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
+bool Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
 {
-    Piece_status position("0000000");
+    Board_position position("0000000");
     if (x <= 0.35)
     {
         position|=A;
@@ -300,6 +303,11 @@ void Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
     {
         position|=P3;
     }
+    if( !board_.object().activate(position))
+    {
+        return false;
+    }
     p.set_position(position);
     p.activate();
+    return true;
 }

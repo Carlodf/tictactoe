@@ -66,5 +66,5 @@ private:
 
     Piece& get_non_active_piece(std::vector<Renderer<Piece>>& pieces);
     void update_pieces(std::vector<Renderer<Piece>>& pieces);
-    void set_piece_coordinates(float x, float y, Piece& p);
+    bool set_piece_coordinates(float x, float y, Piece& p);
 };
