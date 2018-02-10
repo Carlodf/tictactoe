@@ -17,8 +17,19 @@ env = Environment(
 test = env.Clone()
 
 test.Append(LIBS=test_lib)
+source = [
+    'tictactoe.cpp',
+    'text_renderer.cpp',
+    'media_manager.cpp'
+]
 
-unit_test = test.Program(target='test', source=['test_piece.cpp'], LIBPATH='/usr/include/gtest')
+tests = [
+    'test_board.cpp',
+    'test_piece.cpp',
+    'test_tictactoe.cpp'
+]
+
+unit_test = test.Program(target='test', source=[source, tests], LIBPATH='/usr/include/gtest')
 test_alias = Alias('test', [unit_test], unit_test[0].abspath)
 AlwaysBuild(test_alias)
-env.Program(target='game', source=['tictactoe_main.cpp', 'tictactoe.cpp', 'text_renderer.cpp', 'media_manager.cpp'])
+env.Program(target='game', source=[source, 'tictactoe_main.cpp'])

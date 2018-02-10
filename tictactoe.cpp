@@ -3,6 +3,7 @@
 
 #include "error.hpp"
 #include "color_palette.hpp"
+#include "piece.hpp"
 #include "tictactoe.hpp"
 
 const std::string X_BMP_PATH = "assets/x.bmp";
@@ -62,6 +63,9 @@ bool Tictactoe::init()
 
     load_pieces();
 
+    bad_input_rect_.w = SCREEN_WIDTH/3;
+    bad_input_rect_.h = SCREEN_HEIGHT/3;
+
     status_.set(PLAY);
 
     return true;
@@ -70,11 +74,12 @@ bool Tictactoe::init()
 int Tictactoe::run()
 {
     status_.set(X_TURN);
-    while(!status_.quit())
+    while(!status_.quit() && !status_.win() &&!status_.end())
     {
         poll_input_events();
         update();
         render();
+        check_game_solution();
     }
     return 0;
 }
@@ -143,6 +148,20 @@ int Tictactoe::render()
         }
     }
 
+    if (status_.bad_input())
+    {
+        SDL_SetRenderDrawBlendMode(
+            renderer_.get(),
+            SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(
+            renderer_.get(),
+            dark_red.r,
+            dark_red.g,
+            dark_red.b,
+            125);
+        SDL_RenderFillRect(renderer_.get(), &bad_input_rect_);
+    }
+
     SDL_Rect text_dest= { 0, 0, 0, 0 };
 
     if(!text_renderer_.render_messages(
@@ -153,6 +172,7 @@ int Tictactoe::render()
     {
         return 1;
     }
+
 
     SDL_RenderPresent(renderer_.get());
 
@@ -207,6 +227,7 @@ bool Tictactoe::load_pieces()
 
 void Tictactoe::handle_touch(float x, float y)
 {
+    status_.reset_bad_input();
     bool success = false;
     if(status_.x_turn())
     {
@@ -219,7 +240,6 @@ void Tictactoe::handle_touch(float x, float y)
     if (success)
     {
         status_.swap_turn();
-        //TODO provide visual feedback
     }
 }
 
@@ -276,6 +296,20 @@ void Tictactoe::update_piece(Renderer<Piece>& p)
     p.update(x, y, w, h);
 }
 
+void Tictactoe::set_bad_input_rect(const Board_position& position)
+{
+    int width_unit = SCREEN_WIDTH/3;
+    int height_unit = SCREEN_HEIGHT/3;
+    int width_offset =(((width_unit) - bad_input_rect_.w)/2);
+    int height_offset =(((height_unit) - bad_input_rect_.h)/2);
+    auto coordinate = Board::get_normalized_coorinate(position);
+    bad_input_rect_.x = ((coordinate.x * width_unit) -
+        bad_input_rect_.w - width_offset);
+    bad_input_rect_.y = ((coordinate.y * height_unit) -
+        bad_input_rect_.h - height_offset);
+}
+
+
 bool Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
 {
     Board_position position("0000000");
@@ -305,9 +339,112 @@ bool Tictactoe::set_piece_coordinates(float x, float y, Piece& p)
     }
     if( !board_.object().activate(position))
     {
+        set_bad_input_rect(position);
+        status_.set(BAD_INPUT);
         return false;
     }
     p.set_position(position);
     p.activate();
     return true;
+}
+
+void Tictactoe::check_game_solution()
+{
+    //no need to check for end conditions
+    if (x_pieces_.size() + o_pieces_.size() < 5)
+    {
+        return;
+    }
+    else if (x_pieces_.size() + o_pieces_.size() == 9)
+    {
+        status_.change(END);
+        return;
+    }
+    if (win(status_))
+    {
+        status_.change(WIN);
+    }
+}
+
+bool Tictactoe::win(const Status& status)
+{
+    //when checking for condition the turn is already been swapped but the last
+    //last move is been performed by the previous piece type.
+    if (status.x_turn())
+    {
+        return is_tris(o_pieces_);
+    }
+    else if (status.o_turn())
+    {
+        return is_tris(x_pieces_);
+    }
+    return false;
+}
+
+bool Tictactoe::is_tris(std::vector<Renderer<Piece>>& pieces)
+{
+    std::size_t rowa=0u;
+    std::size_t rowb=0u;
+    std::size_t rowc=0u;
+    std::size_t col1=0u;
+    std::size_t col2=0u;
+    std::size_t col3=0u;
+    std::size_t diag1=0u;
+    std::size_t diag2=0u;
+    for (auto& piece : pieces)
+    {
+        if ((piece.object().status()&A) == A)
+        {
+            rowa++;
+            if((piece.object().status()&P1) == P1)
+            {
+                diag1++;
+            }
+            if((piece.object().status()&P3) == P3)
+            {
+                diag2++;
+            }
+        }
+        if ((piece.object().status()&B) == B)
+        {
+            rowb++;
+            if((piece.object().status()&P2) == P2)
+            {
+                diag1++;
+                diag2++;
+            }
+        }
+        if ((piece.object().status()&C) == C)
+        {
+            rowc++;
+            if((piece.object().status()&P3) == P3)
+            {
+                diag1++;
+            }
+            if((piece.object().status()&P1) == P1)
+            {
+                diag2++;
+            }
+        }
+        if ((piece.object().status()&P1) == P1)
+        {
+            col1++;
+        }
+        if ((piece.object().status()&P2) == P2)
+        {
+            col2++;
+        }
+        if ((piece.object().status()&P3) == P3)
+        {
+            col3++;
+        }
+        if( rowa == 3 || rowb == 3 || rowc == 3 ||
+            col1 == 3 || col2 ==3 || col3 ==3 ||
+            diag1 == 3 || diag2 ==3)
+        {
+            return true;
+        }
+
+    }
+    return false;
 }

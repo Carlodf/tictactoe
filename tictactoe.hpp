@@ -29,17 +29,15 @@ public:
     {
     }
 
-    ~Tictactoe()
-    {
-        text_renderer_.~Text_renderer();
-        sdl_.~Sdl();
-    }
+    ~Tictactoe() = default;
 
     Tictactoe(const Tictactoe&) = delete;
     Tictactoe(Tictactoe&&) = delete;
 
     bool init();
     int run();
+
+    bool is_tris(std::vector<Renderer<Piece>>& pieces);
 
 private:
     Renderer<Board> board_;
@@ -53,10 +51,12 @@ private:
     raii::Renderer_ptr renderer_;
     Text_renderer text_renderer_;
     Media_manager media_manager_;
+    SDL_Rect bad_input_rect_ = {0, 0, 0, 0};
 
     void poll_input_events();
     bool update();
     int render();
+    void set_bad_input_rect(const Board_position& position);
 
     bool load_board();
     bool load_pieces();
@@ -67,4 +67,7 @@ private:
     Piece& get_non_active_piece(std::vector<Renderer<Piece>>& pieces);
     void update_pieces(std::vector<Renderer<Piece>>& pieces);
     bool set_piece_coordinates(float x, float y, Piece& p);
+
+    void check_game_solution();
+    bool win(const Status& status);
 };
